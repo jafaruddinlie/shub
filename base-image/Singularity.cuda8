@@ -1,10 +1,10 @@
 Bootstrap: debootstrap
 MirrorURL: http://us.archive.ubuntu.com/ubuntu/
 OSVersion:  xenial
-Include: apt wget sudo vim build-essential git sudo
+Include: apt wget sudo vim build-essential git sudo software-properties-common
 
 %post
-    apt-get install -y software-properties-common
+    # apt-get install -y software-properties-common
     apt-add-repository -y 'deb http://us.archive.ubuntu.com/ubuntu/ xenial main restricted'
     apt-add-repository -y 'deb http://us.archive.ubuntu.com/ubuntu/ xenial-updates main restricted'
     apt-add-repository -y 'deb http://us.archive.ubuntu.com/ubuntu/ xenial universe'
