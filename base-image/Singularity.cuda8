@@ -3,51 +3,44 @@ MirrorURL: http://us.archive.ubuntu.com/ubuntu/
 OSVersion:  xenial
 Include: apt wget sudo vim build-essential git sudo software-properties-common
 
-%post
-    # apt-get install -y software-properties-common
-    apt-add-repository -y 'deb http://us.archive.ubuntu.com/ubuntu/ xenial main restricted'
-    apt-add-repository -y 'deb http://us.archive.ubuntu.com/ubuntu/ xenial-updates main restricted'
-    apt-add-repository -y 'deb http://us.archive.ubuntu.com/ubuntu/ xenial universe'
-    apt-add-repository -y 'deb http://us.archive.ubuntu.com/ubuntu/ xenial-updates universe'
-    apt-get update
-    apt-get -y install expect
-    apt-get -y upgrade
-    mkdir /projects
-    mkdir /scratch
-    add-apt-repository -y ppa:x2go/stable
-    apt-get update
-    apt install -y x2goserver
-    apt install -y x2goclient
-    apt install -y pyhoca-cli
-    apt-get -y install python-pip
-    apt-get update
-    apt-get -y upgrade
-    cd /tmp/
-    wget https://swift.rc.nectar.org.au:8888/v1/AUTH_810/CVL-Singularity-External-Files/turbovnc_2.1.2_amd64.deb
-    wget https://swift.rc.nectar.org.au:8888/v1/AUTH_810/CVL-Singularity-External-Files/virtualgl_2.5.2_amd64.deb
-    dpkg -i virtualgl_2.5.2_amd64.deb
-    dpkg -i turbovnc_2.1.2_amd64.deb
-    apt-get install -y -f
-    apt-get install -y libzip-dev libtiff5-dev
-    apt-get install -y curl expect cmake gnuplot libxmu-dev libxmu-headers gfortran python2.7-dev emacs csh 
-    apt-get install -y fftw3-dev libfftw3-mpi3 libfftw3-mpi-dev libfftw3-doc fftw-dev fftw-single-dev
-    apt-get install -y wx-common wx3.0-headers
-    apt-get install -y x2goserver x2goserver-x2goagent
-    apt-get install -y x2goclient
-    apt-get install -y libwxgtk3.0-dev libwxgtk-webview3.0-dev
-    apt-get install -y git gfortran-5 cmake libfftw3-dev
-    apt-get install -y gnuplot libxmu-dev libxmu-headers gfortran libxss1
-    apt-get install -y pyhoca-cli
-    apt-get install -y mate-desktop
-    apt-get install -y mate-session-manager
-    apt-get install -y mate-desktop-environment 
-    apt-get install -y autoconf
-    apt-get install -y libtool libtool-bin
+%labels
+MAINTAINER jafar.lie@monash.edu
+HARDWARE gpu
 
-    #INSTALL CUDA
-    cd /tmp
-    CUDA_URL="http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/cuda-repo-ubuntu1604_8.0.61-1_amd64.deb"
-    wget ${CUDA_URL}
-    dpkg -i /tmp/cuda-repo-ubuntu1604_8.0.61-1_amd64.deb
-    apt-get update
-    apt-get install -y cuda=8.0.61-1
+
+%runscript
+    echo "This is what happens when you run the container..."
+    $*
+
+%post
+    echo "*********************************************************"
+    echo "Setup and display environment"
+    echo "*********************************************************"
+    export LC_ALL=en_AU.UTF-8
+    export LANGUAGE=en_AU.UTF-8
+    export DEBIAN_FRONTEND=noninteractive
+    echo $LC_ALL
+    echo $LANGUAGE
+    echo $DEBIAN_FRONTEND
+    echo "*********************************************************"
+    echo "Install repositories"
+    echo "*********************************************************"
+    sed -i 's/main/main restricted universe multiverse/g' /etc/apt/sources.list
+    echo "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64 /" > /etc/apt/sources.list.d/cuda.list
+    apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub
+    echo "*********************************************************"
+    echo "Update repositories and install desktop"
+    echo "*********************************************************"
+    apt update
+    apt upgrade -y
+    apt install -y locales
+    locale-gen en_AU.UTF-8
+    apt install -y wget ubuntu-desktop vim software-properties-common git cmake 
+    echo "*********************************************************"
+    echo "Installing CUDA"
+    echo "*********************************************************"
+    apt install -y cuda-9-0
+    echo "*********************************************************"
+    echo "Installing python dependencies"
+    echo "*********************************************************"
+    apt install -y python-pip python-pyqt5 pyqt5-dev python-tk
