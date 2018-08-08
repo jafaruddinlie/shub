@@ -49,6 +49,15 @@ HARDWARE gpu
     echo "*********************************************************"
     apt install -y python-pip python-pyqt5 pyqt5-dev python-tk
     echo "*********************************************************"
+    echo "Installing vglrun and TurboVNC"
+    echo "*********************************************************"
+    wget https://swift.rc.nectar.org.au:8888/v1/AUTH_810/CVL-Singularity-External-Files/turbovnc_2.1.2_amd64.deb
+    dpkg -i turbovnc_2.1.2_amd64.deb
+    wget https://swift.rc.nectar.org.au:8888/v1/AUTH_810/CVL-Singularity-External-Files/virtualgl_2.5.2_amd64.deb
+    dpkg -i virtualgl_2.5.2_amd64.deb
+    apt update
+    apt -y upgrade
+    echo "*********************************************************"
     echo "Installing dristhi requirement"
     echo "*********************************************************"
     apt -y install qt5-qmake
