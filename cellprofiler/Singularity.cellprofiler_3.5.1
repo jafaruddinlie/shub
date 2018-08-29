@@ -12,6 +12,9 @@ HARDWARE gpu
  export PATH=$CELLPROFILERBIN:$PATH
 
 %post -c /bin/bash
+ add-apt-repository main
+ add-apt-repository universe
+ add-apt-repository multiverse
  apt -y update
  apt -y upgrade
  apt -y install \
