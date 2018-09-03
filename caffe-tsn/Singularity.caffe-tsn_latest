@@ -38,8 +38,9 @@ HARDWARE gpu
  sudo apt-get -qq install libgflags-dev libgoogle-glog-dev liblmdb-dev
 
  # install Dense_Flow dependencies
- sudo apt-get -qq install libzip-dev
-
+ apt -y install libzip-dev
+ apt -y install unzip
+ 
  # install common dependencies: OpenCV
  # adpated from OpenCV.sh
  version="2.4.13"
@@ -79,6 +80,7 @@ HARDWARE gpu
   apt -y install libgstreamer-plugins-good1.0-0
   apt -y install libgstreamer0.10-0
   apt -y install libgstreamer1.0-0
+
 
   echo "Downloading OpenCV" $version
   wget -O OpenCV-$version.zip https://github.com/Itseez/opencv/archive/$version.zip
