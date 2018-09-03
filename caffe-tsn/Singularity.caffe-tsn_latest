@@ -121,7 +121,7 @@ HARDWARE gpu
 
  # build caffe
  echo "Building Caffe, MPI status: ${CAFFE_USE_MPI}"
- sudo apt-get -qq install python-numpy python3-numpy
+ sudo apt -y install python-numpy python3-numpy
  cd /temporal-segment-networks/lib/caffe-action
  [[ -d build ]] || mkdir build
  cd build
