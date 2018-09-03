@@ -1,0 +1,139 @@
+Bootstrap: debootstrap
+MirrorURL: http://us.archive.ubuntu.com/ubuntu/
+OSVersion:  xenial
+Include: apt wget sudo vim build-essential git sudo software-properties-common
+
+%labels
+MAINTAINER jafar.lie@monash.edu
+HARDWARE gpu
+
+
+%environment
+ OPENCVLIB="/opt/opencv/lib"
+ DENSEFLOWLIB="/opt/dense_flow/build"
+ CAFFELIB="/opt/caffe/lib"
+ DENSEFLOW="/opt/dense_flow/build"
+ export LD_LIBRARY_PATH=${OPENCVLIB}:${DENSEFLOWLIB}:${CAFFELIB}:${LD_LIBRARY_PATH}
+ CAFFEPATH="/opt/caffe/bin"
+ export PATH=${DENSEFLOW}:${CAFFEPATH}:${PATH}
+
+%post -c /bin/bash
+ add-apt-repository main
+ add-apt-repository universe
+ add-apt-repository multiverse
+ apt -y update
+ apt -y upgrade
+ cd /
+ git clone --recursive https://github.com/yjxiong/temporal-segment-networks
+ CAFFE_USE_MPI=${1:-OFF}
+ CAFFE_MPI_PREFIX=${MPI_PREFIX:-""}
+
+ # update the submodules: Caffe and Dense Flow
+ cd /temporal-segment-networks
+ git submodule update --remote
+
+ # install Caffe dependencies
+ sudo apt-get -qq install libprotobuf-dev libleveldb-dev libsnappy-dev libhdf5-serial-dev protobuf-compiler libatlas-base-dev
+ sudo apt-get -qq install --no-install-recommends libboost1.58-all-dev
+ sudo apt-get -qq install libgflags-dev libgoogle-glog-dev liblmdb-dev
+
+ # install Dense_Flow dependencies
+ sudo apt-get -qq install libzip-dev
+
+ # install common dependencies: OpenCV
+ # adpated from OpenCV.sh
+ version="2.4.13"
+
+ echo "Building OpenCV" $version
+ [[ -d 3rd-party ]] || mkdir 3rd-party/
+ cd 3rd-party/
+
+ if [ ! -d "opencv-$version" ]; then
+  echo "Installing OpenCV Dependencies"
+  apt-get update
+  apt -y install libopencv-dev build-essential checkinstall cmake pkg-config yasm libjpeg-dev libjasper-dev
+ libavcodec-dev libavformat-dev libswscale-dev libdc1394-22-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libv4l-dev python-dev python-numpy libtbb-dev libqt4-dev libgtk2.0-dev libfaac-dev libmp3lame-dev libopencore-amrnb-dev libopencore-amrwb-dev libtheora-dev libvorbis-dev libxvidcore-dev x264 v4l-utils
+  apt -y install libavcodec-extra-52 gstreamer0.10-plugins-ugly gstreamer0.10-plugins-bad gstreamer0.10-plugins-good
+  apt -y install libopencv-dev build-essential checkinstall cmake pkg-config yasm libjpeg-dev libjasper-dev libavcodec-dev libavformat-dev libswscale-dev libdc1394-22-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libv4l-dev python-dev python-numpy libtbb-dev libqt4-dev libgtk2.0-dev libfaac-dev libmp3lame-dev libopencore-amrnb-dev libopencore-amrwb-dev libtheora-dev libvorbis-dev libxvidcore-dev x264 v4l-utils
+  apt -y install gstreamer0.10-alsa
+  apt -y install gstreamer0.10-nice
+  apt -y install gstreamer0.10-plugins-base
+  apt -y install gstreamer0.10-plugins-base-apps
+  apt -y install gstreamer0.10-plugins-good
+  apt -y install gstreamer0.10-pulseaudio
+  apt -y install gstreamer0.10-tools
+  apt -y install gstreamer0.10-x
+  apt -y install gstreamer1.0-alsa
+  apt -y install gstreamer1.0-clutter
+  apt -y install gstreamer1.0-clutter-3.0
+  apt -y install gstreamer1.0-libav
+  apt -y install gstreamer1.0-nice
+  apt -y install gstreamer1.0-plugins-base
+  apt -y install gstreamer1.0-plugins-base-apps
+  apt -y install gstreamer1.0-plugins-good
+  apt -y install gstreamer1.0-pulseaudio
+  apt -y install gstreamer1.0-tools
+  apt -y install gstreamer1.0-x
+  apt -y install libgstreamer-plugins-base0.10-0
+  apt -y install libgstreamer-plugins-base1.0-0
+  apt -y install libgstreamer-plugins-good1.0-0
+  apt -y install libgstreamer0.10-0
+  apt -y install libgstreamer1.0-0
+
+  echo "Downloading OpenCV" $version
+  wget -O OpenCV-$version.zip https://github.com/Itseez/opencv/archive/$version.zip
+
+  echo "Extracting OpenCV" $version
+  unzip OpenCV-$version.zip
+ fi
+
+ echo "Building OpenCV" $version
+ cd opencv-$version
+ [[ -d build ]] || mkdir build
+ cd build
+ cmake -DCMAKE_INSTALL_PREFIX=/opt/opencv -DCMAKE_BUILD_TYPE=RELEASE -DWITH_TBB=ON  -DWITH_V4L=ON ..
+ 
+ if make -j32 ; then
+  make install
+  echo "OpenCV" $version "built."
+  else
+  echo "Failed to build OpenCV. Please check the logs above."
+  exit 1
+ fi
+
+ echo "Building Dense Flow"
+ cd /opt/
+ git clone --recursive http://github.com/yjxiong/dense_flow
+ cd dense_flow
+
+ [[ -d build ]] || mkdir build
+  cd build
+  OpenCV_DIR=/opt/opencv cmake .. -DCUDA_USE_STATIC_CUDA_RUNTIME=OFF
+
+ if make -j ; then
+  echo "Dense Flow built."
+ else
+  echo "Failed to build Dense Flow. Please check the logs above."
+  exit 1
+ fi
+
+ # build caffe
+ echo "Building Caffe, MPI status: ${CAFFE_USE_MPI}"
+ sudo apt-get -qq install python-numpy python3-numpy
+ cd /temporal-segment-networks/lib/caffe-action
+ [[ -d build ]] || mkdir build
+ cd build
+ if [ "$CAFFE_USE_MPI" == "MPI_ON" ]; then
+  OpenCV_DIR=/opt/opencv cmake .. -DCMAKE_INSTALL_PREFIX=/opt/caffe -DUSE_MPI=ON -DMPI_CXX_COMPILER="${CAFFE_MPI_PREFIX}/bin/mpicxx" -DCUDA_USE_STATIC_CUDA_RUNTIME=OFF
+ else
+  OpenCV_DIR=/opt/opencv cmake .. -DCMAKE_INSTALL_PREFIX=/opt/caffe -DCUDA_USE_STATIC_CUDA_RUNTIME=OFF
+ fi
+ if make -j32 install ; then
+  echo "Caffe Built."
+ else
+  echo "Failed to build Caffe. Please check the logs above."
+  exit 1
+ fi
+
+%runscript
+ $*
