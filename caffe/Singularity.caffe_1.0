@@ -1,0 +1,59 @@
+Bootstrap: debootstrap
+MirrorURL: http://us.archive.ubuntu.com/ubuntu/
+OSVersion:  xenial
+Include: apt wget sudo vim build-essential git sudo software-properties-common
+
+%labels
+ MAINTAINER jafar.lie@monash.edu
+ HARDWARE gpu
+
+%environment
+ CAFFE=/opt/caffe/bin
+ export PATH=$CAFFE:$PATH
+ export PYTHONPATH=/opt/caffe/python:$PYTHONPATH
+ export LD_LIBRARY_PATH=/opt/caffe/lib:$LD_LIBRARY_PATH
+ export LIBRARY_PATH=/opt/caffe/lib:$LIBRARY_PATH
+
+%runscript
+ $*
+
+%post -c /bin/bash
+ echo "INSTALL CAFFE DEPENDENCIES"
+ apt-get update
+ apt-get -y upgrade
+ apt -y install libprotobuf-dev libleveldb-dev libsnappy-dev libhdf5-serial-dev protobuf-compiler
+ apt -y install libatlas-base-dev
+ apt-get -y libgflags-dev libgoogle-glog-dev liblmdb-dev
+ apt -y install libprotobuf-dev libleveldb-dev libsnappy-dev libopencv-dev libhdf5-serial-dev protobuf-compiler
+ apt -y install --no-install-recommends libboost-all-dev
+ apt -y install libatlas-base-dev
+ apt -y install python-opencv
+ apt -y install protobuf-compiler
+ apt -y install libgflags-dev libgoogle-glog-dev liblmdb-dev
+ apt -y install python-dev
+ apt -y install python-numpy python-scipy
+ apt -y install libopencv-dev
+ apt -y install libhdf5-10
+ apt -y install libhdf5-serial-dev
+ apt -y install libhdf5-dev
+ apt -y install libhdf5-cpp-11
+ apt -y install cython python-numpy python-scipy python-skimage python-matplotlib ipython python-h5py python-leveldb python-networkx python-nose python-pandas python-dateutil python-protobuf python-gflags python-yaml python-pillow
+ cd /usr/lib/x86_64-linux-gnu
+ ln -s libhdf5_serial.so.10.1.0 libhdf5.so
+ ln -s libhdf5_serial_hl.so.10.0.2 libhdf5_hl.so
+ echo "INSTALL CAFFE"
+ cd /
+ git clone --recursive https://github.com/BVLC/caffe.git
+ cd caffe
+ sed -i '/INCLUDE_DIRS/s/$/ \/usr\/include\/hdf5\/serial/' Makefile.config.example
+ sed -i '/LIBRARY_DIRS/s/$/ \/usr\/lib\/x86_64-linux-gnu\/hdf5\/serial/' Makefile.config.example
+ cp Makefile.config.example Makefile.config
+ make -j 8 all
+ make pycaffe
+ make distribute
+ mv distribute /opt/caffe
+
+ for file in /opt/caffe/bin/*
+ do
+  mv $file /opt/caffe/bin/`basename $file .bin`
+ done
