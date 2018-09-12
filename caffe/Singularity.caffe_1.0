@@ -57,3 +57,4 @@ Include: apt wget sudo vim build-essential git sudo software-properties-common
  do
   mv $file /opt/caffe/bin/`basename $file .bin`
  done
+
