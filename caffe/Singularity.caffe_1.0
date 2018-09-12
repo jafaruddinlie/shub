@@ -44,7 +44,7 @@ Include: apt wget sudo vim build-essential git sudo software-properties-common
  echo "*********************************************************"
  echo "Installing CUDA"
  echo "*********************************************************"
- apt install -y cuda-9-0
+ apt install -y cuda-8-0
  echo "*********************************************************"
  echo "Installing python dependencies"
  echo "*********************************************************"
