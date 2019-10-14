@@ -1,0 +1,40 @@
+Bootstrap: shub
+From:      Characterisation-Virtual-Laboratory/CharacterisationVL-Software:1804-cuda9
+
+%labels
+    MAINTAINER_NAME  Jafaruddin Lie
+    MAINTAINER_EMAIL jafar.lie@monash.edu
+
+    APPLICATION_NAME haystack-bio
+    APPLICATION_VERSION 0.5.5
+
+    HARDWARE GPU
+
+    LAST_UPDATED 10-OCT-2019
+
+%environment
+    export CONDA_SHLVL=1
+    export CONDA_EXE=/opt/miniconda2/bin/conda
+    export CONDA_PREFIX=/opt/miniconda2
+    export CONDA_PYTHON_EXE=/opt/miniconda2/bin/python
+    export _CE_CONDA=
+    export CONDA_PROMPT_MODIFIER="(base)"
+    export CONDA_DEFAULT_ENV=base
+    export PATH=/opt/miniconda2/bin/:$PATH
+
+
+%post
+    wget -c https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O /miniconda.sh
+    bash /miniconda.sh -b -p /opt/miniconda2
+    export PATH=/opt/miniconda2/bin/:$PATH
+    conda update --all --yes
+    conda config --add channels defaults
+    conda config --add channels conda-forge
+    conda config --add channels bioconda
+    conda install haystack_bio
+
+%runscript
+    $*
+
+
+
