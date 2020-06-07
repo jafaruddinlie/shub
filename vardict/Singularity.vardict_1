@@ -18,7 +18,7 @@ From: Characterisation-Virtual-Laboratory/CharacterisationVL-Software:1804-cuda1
  VEP=/opt/vep
  CPANM=/opt/cpanm
  export GRADLE_HOME=/opt/gradle/gradle-6.4.1
- export PATH=$HTSLIB/bin:$SAMTOOLS/bin:$BCFTOOLS/bin:$BWA:${GRADLE_HOME}/bin:$VARDICT/bin/:$VT/bin:$CPANM:PATH
+ export PATH=$HTSLIB/bin:$SAMTOOLS/bin:$BCFTOOLS/bin:$BWA:${GRADLE_HOME}/bin:$VARDICT/bin/:$VT/bin:$CPANM:$PATH
  export LD_LIBRARY_PATH=$HTSLIB/lib/:$LD_LIBRARY_PATH
  export PATH=${GRADLE_HOME}/bin:${PATH}
  export JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF8"
